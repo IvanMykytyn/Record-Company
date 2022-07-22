@@ -1,4 +1,5 @@
 const client = require('../db/connection')
+const { getNumberOfSongs } = require('./bandController')
 
 module.exports = {
   // Select All Albums
@@ -152,6 +153,33 @@ module.exports = {
       )
 
       client.end
+    } catch (error) {
+      res.status(404).send({ message: error.message })
+    }
+  },
+  async getNumberOfSongs(req, res) {
+    try {
+      await client.query(
+        `
+        SELECT albums.name, release_year, COUNT(albums.id) FROM albums
+        INNER JOIN songs ON songs.album_id = albums.id
+        GROUP BY albums.id
+        ORDER BY count DESC
+      `,
+        (err, albums) => {
+          if (!err) {
+            res.status(200).send(
+              albums.rows.map((item) => {
+                return {
+                  ...item,
+                  numberOfSongs: parseInt(item.count),
+                  count: undefined,
+                }
+              })
+            )
+          }
+        }
+      )
     } catch (error) {
       res.status(404).send({ message: error.message })
     }

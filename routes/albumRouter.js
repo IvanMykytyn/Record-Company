@@ -1,5 +1,9 @@
 const { Router } = require('express')
 
+const characterValidation = require('../middleware/countOfCharacters')
+const bandIdValidation = require('../middleware/albumValidation/band_id')
+const releaseYearValidation = require('../middleware/albumValidation/release_year')
+
 // controllers
 const {
   selectAllAlbums,
@@ -8,7 +12,8 @@ const {
   getOldestAlbum,
   getLongestAlbum,
   getInfoAboutDuration,
-  SelectTheLongestSongEachAlbums
+  SelectTheLongestSongEachAlbums,
+  getNumberOfSongs,
 } = require('../controllers/albumController')
 
 let albumRouter = Router()
@@ -16,7 +21,7 @@ let albumRouter = Router()
 albumRouter
   .route('/')
   .get(selectAllAlbums)
-  .post(insertAlbum)
+  .post(characterValidation, releaseYearValidation, bandIdValidation, insertAlbum)
   .delete(deleteAlbum)
 
 albumRouter.route('/oldest').get(getOldestAlbum)
@@ -24,5 +29,8 @@ albumRouter.route('/longest').get(getLongestAlbum)
 
 albumRouter.route('/duration').get(getInfoAboutDuration)
 albumRouter.route('/longest-song').get(SelectTheLongestSongEachAlbums)
+
+albumRouter.route('/number-of-songs').get(getNumberOfSongs)
+
 
 module.exports = albumRouter

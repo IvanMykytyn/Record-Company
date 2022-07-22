@@ -8,6 +8,7 @@ const client = require('./db/connection.js')
 
 // routes
 const { albumRouter, bandRouter, songRouter } = require('./routes/index')
+
 app.use(express.json())
 
 
