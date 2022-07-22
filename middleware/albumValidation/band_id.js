@@ -6,7 +6,7 @@ const bandIdValidation = async (req, res, next) => {
 
     await client.query(
       `
-        SELECT EXISTS(SELECT 1 FROM albums WHERE band_id=${band_id}) AS "exists"
+        SELECT EXISTS(SELECT 1 FROM bands WHERE id=${band_id}) AS "exists"
       `,
       (err, result) => {
         if (!err) {
@@ -18,6 +18,8 @@ const bandIdValidation = async (req, res, next) => {
         }
       }
     )
+    client.end
+
   } catch (error) {
     res.status(404).send({ message: error.message })
   }

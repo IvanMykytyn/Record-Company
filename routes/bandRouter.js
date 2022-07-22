@@ -1,6 +1,7 @@
 const { Router } = require('express')
 
 const characterValidation = require('../middleware/countOfCharacters')
+const existIdValidation = require('../middleware/existId')
 
 const {
   getAllBands,
@@ -13,7 +14,11 @@ const {
 
 const bandRouter = Router()
 
-bandRouter.route('/').get(getAllBands).post(characterValidation, insertBand).delete(deleteBand)
+bandRouter
+  .route('/')
+  .get(getAllBands)
+  .post(characterValidation, insertBand)
+  .delete(existIdValidation, deleteBand)
 bandRouter.route('/exist-albums').get(getAllThatHaveAlbums)
 bandRouter.route('/not-exist-albums').get(getAllThatHaveNotAlbums)
 bandRouter.route('/number-of-songs').get(getNumberOfSongs)

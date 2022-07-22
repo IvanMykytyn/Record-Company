@@ -3,11 +3,20 @@ const client = require('../db/connection')
 module.exports = {
   async getAllSongs(req, res) {
     try {
-      await client.query(`SELECT * FROM songs`, (err, songs) => {
-        if (!err) {
-          res.status(200).send(songs.rows)
+      await client.query(
+        `
+        SELECT songs.id, songs.name, songs.length,
+        albums.name AS album_name 
+        FROM songs
+        INNER JOIN albums 
+        ON songs.album_id = albums.id
+      `,
+        (err, songs) => {
+          if (!err) {
+            res.status(200).send(songs.rows)
+          }
         }
-      })
+      )
       client.end
     } catch (error) {
       res.status(404).send({ message: error.message })
@@ -32,9 +41,8 @@ module.exports = {
       )
 
       client.end
-
     } catch (error) {
-      console.log("something3");
+      console.log('something3')
 
       res.status(404).send({ message: error.message })
     }
@@ -60,5 +68,4 @@ module.exports = {
       res.status(404).send({ message: error.message })
     }
   },
-
 }

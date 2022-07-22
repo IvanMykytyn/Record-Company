@@ -5,11 +5,20 @@ module.exports = {
   // Select All Albums
   async selectAllAlbums(req, res) {
     try {
-      await client.query(`SELECT * FROM albums`, (err, albums) => {
-        if (!err) {
-          res.status(200).send(albums.rows)
+      await client.query(
+        `
+        SELECT albums.id, albums.name, albums.release_year,
+        bands.name AS band_name
+        FROM albums
+        INNER JOIN bands 
+        ON bands.id = albums.band_id
+      `,
+        (err, albums) => {
+          if (!err) {
+            res.status(200).send(albums.rows)
+          }
         }
-      })
+      )
       client.end
     } catch (error) {
       res.status(404).send({ message: error.message })
@@ -87,12 +96,12 @@ module.exports = {
     try {
       await client.query(
         `
-        SELECT albums.name, albums.release_year, SUM(songs.length) 
-        FROM albums
-        INNER JOIN songs ON songs.album_id = albums.id
-        GROUP BY albums.id
-        ORDER BY sum DESC
-        LIMIT 1
+          SELECT albums.name, albums.release_year, SUM(songs.length) AS duration 
+          FROM albums
+          INNER JOIN songs ON songs.album_id = albums.id
+          GROUP BY albums.id
+          ORDER BY duration DESC
+          LIMIT 1
         `,
         (err, album) => {
           if (!err) {
@@ -107,6 +116,7 @@ module.exports = {
   },
 
   async getInfoAboutDuration(req, res) {
+    // get data of total/average/count of songs(duration) from the specific album
     try {
       const { album_id, queryType } = req.query
       const func =
@@ -119,13 +129,13 @@ module.exports = {
           : ''
 
       await client.query(
-        `SELECT ${func}(length) 
+        `SELECT ${func}(length) AS ${queryType} 
         FROM songs
         GROUP BY album_id
         HAVING album_id = ${album_id}`,
         (err, result) => {
           if (!err) {
-            res.status(200).send(result.rows)
+            res.status(200).send(result.rows[0])
           }
         }
       )
@@ -140,7 +150,7 @@ module.exports = {
     try {
       await client.query(
         `
-        SELECT albums.name, albums.release_year, MAX(songs.length) 
+        SELECT albums.name, albums.release_year, MAX(songs.length) as longest_song_duration
         FROM albums
         INNER JOIN songs ON songs.album_id = albums.id
         GROUP BY albums.id
